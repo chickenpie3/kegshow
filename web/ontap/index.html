@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="../static/style.css">
+    <link rel="icon" type="image/png" href="../static/favicon.png">
+    <title>Kegshow</title>
+</head>
+<body>
+    <script src="../static/constants.js"></script>
+    <script src="../static/request.js"></script>
+    <script src="../static/recipes.js"></script>
+    <script src="../static/modal.js"></script>
+    <script src="../static/glass.js"></script>
+    <script src="../static/monitor_bundle.js"></script>
+    <script src="../static/load.js"></script>
+    <script src="../static/srm.js"></script>
+    <script src="../static/date.js"></script>
+    <script>
+
+    var token = '';
+
+    var timer = null;
+    var scrolling = false;
+    var scolling_elt = null;
+    var afterscroll = null;
+    function oncardscroll(e) {
+        e = e || event;
+
+        scrolling = true;
+        scolling_elt = e.target;
+        if(timer !== null) {
+            clearTimeout(timer);
+        }
+
+        timer = setTimeout(scrollTimeout, 150);
+    }
+
+    function scrollTimeout() {
+        scrolling = false;
+        if (!touching) {
+            snap(scolling_elt);
+            if (afterscroll) {
+                afterscroll();
+                afterscroll = null;
+            }
+        } else {
+            timer = setTimeout(scrollTimeout, 150);
+        }
+    }
+
+    var touching = false;
+    function oncardtouchstart(e) {
+        touching = true;
+    }
+
+    function oncardtouchend(e) {
+        touching = false;
+    }
+
+    function snap(elt) {
+        var left =  elt.scrollLeft;
+        var l2 = Math.floor((left+150) / 300)*330;
+        elt.scrollLeft = l2;
+    }
+
+    function kick(brew, date) {
+        //console.log("kicking brew " + brew._id + ", date: " + date);
+        request("POST", "brew?token="+token, {flowmeter_id:brew.flowmeter_id, remaining:0, kick_date:date},
+            function() {
+                afterscroll = function() {updatekegaction(brew);}
+                brew.remaining = 0;
+                brew.kick_date = date;
+                updatebrew(brew);
+                document.getElementById('card_'+brew._id).scrollIntoView();
+            },
+            console.log);
+    }
+
+    function fill(brew, tapdate, brewdate, recipe, volume) {
+        //console.log("filling brew " + brew._id + " tap date:" + tapdate + " brew date: " + brewdate + " recipe: " + recipe + "volume: " + volume);
+        request("POST", "brew?token="+token, {flowmeter_id:brew.flowmeter_id, volume:volume, remaining:volume, kick_date:0, tap_date:tapdate, brew_date:brewdate, recipe:JSON.stringify(recipe)},
+            function() {
+                brew.volume = volume;
+                brew.remaining = volume;
+                brew.last_remaining = volume;
+                brew.kick_date = 0;
+                brew.tap_date = tapdate;
+                brew.brew_date = brewdate;
+                brew.recipe = recipe;
+                afterscroll = function() {updatekegaction(brew);}
+                updatebrew(brew);
+                document.getElementById('card_'+brew._id).scrollIntoView();
+            },
+            console.log);
+    }
+
+    </script>
+
+    <div id="kickmodal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span id="closekickmodal" class="close">&times;</span>
+        <p>Booooo this keg is empty :(</p>
+        <span>This keg kicked on:</span>
+        <input id="kickdate" type="date"></input>
+        <div id=kickbutton class="kegbutton">
+            DO IT
+        </div>
+      </div>
+    </div>
+
+    <div id="tapmodal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span id="closetapmodal" class="close">&times;</span>
+        <p>Yaaaaaay git yo drank awn :D</p>
+        <span>Ready to serve</span>
+        <input id="tapvolume" type="number" value="5"></input><span>gal</span><br />
+        <span>of fresh</span><select id="taprecipe"></select><br />
+        <span>brewed on</span><select id="tapbrewdate"></select><br />
+        <span>and tapped on</span><input id="tapdate" type="date"></input>
+        <div id=tapbutton class="kegbutton">
+            DO IT
+        </div>
+      </div>
+
+    </div>
+
+    <div id="main" class="main">
+        <!-- <div class="adminlink"><a href="admin.html">Manage Equipment</a></div> -->
+    </div>
+    <script>
+        setupmodal(document.getElementById('kickmodal'), document.getElementById('closekickmodal'));
+        setupmodal(document.getElementById('tapmodal'), document.getElementById('closetapmodal'));
+
+
+        token = readCookie('kegshow_token')
+
+        //console.log("token: " + token);
+
+        request("GET", "brew", null,
+            function(response) {
+                fillcards(response.brews);
+                console.log(response.devices);
+                monitor.monitor(response.devices, updateremaining);
+            },
+            function(error){
+                console.log(error);
+            });
+
+    </script>
+</body>
+</html>

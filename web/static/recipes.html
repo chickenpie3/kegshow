@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Kegshow - Recipes</title>
+</head>
+<body>
+    <script src="request.js"></script>
+    <script src="glass.js"></script>
+    <script src="srm.js"></script>
+    <script src="recipes.js"></script>
+
+    <div class="section">
+    	<div class="brewname" style="margin-bottom: 15px">Recipe Search</div>
+    	<div class="separator"></div>
+    	<div style="width:100%;">
+    		<div>Recipe name:</div>
+    		<input id="recipesearch" class="searchinput" type="text"></input>
+    		<button class="adminbutton" onclick="onsearchclick()"><img src="search.png"></img></button>
+    	</div>
+		<div class="tablescroll">
+			<div id="searchmessage" style="display: none"></div>
+    		<table id="recipesearchresults" style="display: none; width: 100%">
+    			<thead>
+	    		<tr>
+					<th></th><th>Name</th><th>Style</th><th>Creator</th><th>IBU</th><th>OG</th><th>FG</th><th></th>
+				</tr>
+				<tbody id="recipesearchresultsbody"></tbody>
+				</thead>
+    		</table>
+		</div>
+	</div>
+    <div class="section">
+    	<div class="brewname" style="margin-bottom: 15px">My Recipes</div>
+    	<div class="separator"></div>
+    	<div style="width:100%">
+    		<div id="norecipes" style="display: none">Booooo. You dont have any recipes. Search for some above!</div>
+		</div>
+		<div class="tablescroll">
+			<table id="recipetable" style="display: none">
+			<thead>
+			<tr>
+				<th></th><th>Name</th><th>Style</th><th>Creator</th><th>IBU</th><th>OG</th><th>FG</th><th></th>
+			</tr>
+			</thead>
+			<tbody id="recipetablebody"></tbody>
+			</table>
+		</div>
+    </div>
+    <script type="text/javascript">
+    	populaterecipes();
+    </script>
+</body>
+</html>

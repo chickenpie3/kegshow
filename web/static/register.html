@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Kegshow - Register</title>
+</head>
+<body>
+    <script src="request.js"></script>
+    <script>
+    	function onregisterclick(e) {
+    		username = document.getElementById("username").value;
+    		password = document.getElementById("password").value;
+			password2 = document.getElementById("password2").value;
+			api_key = document.getElementById("api_key").value;
+    		api_email = document.getElementById("api_email").value;
+
+    		unauthorized = document.getElementById("unauthorized")
+
+    		if (password != password2) {
+    			unauthorized.innerText = "Passwords dont match.";
+    			unauthorized.style.display = "inline";
+
+    			return;
+    		}
+
+    		let requestbody = {}
+    		requestbody.user = username;
+    		requestbody.password = password;
+    		requestbody.api_key = api_key;
+    		requestbody.api_email = api_email;
+
+   			request("PUT", "users?id=" + username, requestbody, function() {
+				//this also sets the session cookie so redirect to the equipment page
+				window.location.href = username + "/admin.html";
+			}, function(err) {
+				unauthorized.innerText = err.error;
+				unauthorized.style.display = "inline";
+			});
+    	}
+    </script>
+	<div class="section">
+	    <div>Welcome to Kegshow</div>
+	    <div>
+	    	<span>Username:</span><input id="username" type="text"></input>
+	    </div>
+	    <div>
+	    	<span>Password:</span><input id="password" type="Password"></input>
+	    </div>
+	    <div>
+	    	<span>Again:</span><input id="password2" type="Password"></input>
+	    </div>
+	    <div>
+	    	<span>Brewer's Friend account email:</span><input id="api_email" type="text"></input>
+	    </div>
+	    <div>
+	    	<span>Brewer's Friend API key:</span><input id="api_key" type="text"></input>
+	    </div>
+	    <div>
+	    	<button onclick="onregisterclick()">Register</button>
+	    </div>
+	    <div>
+	    	<span class="unauthorized" id="unauthorized">Username already exists :(</span>
+	    </div>
+	</div>
+</body>
+</html>

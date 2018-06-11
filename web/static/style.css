@@ -1,0 +1,301 @@
+body {
+    background-color: #232323;
+    padding: 25px;
+}
+
+div {
+    float: left;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14pt;
+    font-weight: 300;
+    color: #232323;
+}
+
+.section {
+    background-color: #FFFFFF;
+    margin-bottom: 25px;
+    width: 100%;
+    min-height: 200px;
+    max-height: 50vh;
+    overflow: none;
+    padding: 15px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+}
+
+.cardholder {
+    margin: 25px;
+    width: 330px;
+    height: 450px;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    -webkit-scroll-snap-points-x: repeat(300px);
+    -webkit-scroll-snap-type: mandatory;
+    scroll-behavior: smooth;
+
+}
+
+.card {
+    background-color: #FFFFFF;
+    padding: 15px;
+    width: 300px;
+    flex-shrink: 0;
+    height: auto;
+}
+
+.glass {
+    clear: both;
+    float: right;
+}
+
+.brewname {
+    clear: left;
+    color: black;
+    font-weight: 700;
+    font-size: 24pt;
+}
+
+.brewstyle {
+    clear: left;
+    color: black;
+    font-weight: 400;
+    font-size: 20pt;
+    margin-top: -5px;
+    margin-bottom:10px;
+}
+
+.value {
+    float: left;
+    margin-left: 5px;
+}
+
+.stat{
+    clear: left;
+}
+
+.statname {
+    min-width: 40px;
+}
+
+.date{
+     float: left;
+}
+
+.separator {
+    clear: both;
+}
+
+.tapimg {
+    margin-top: 30px;
+    margin-left: 15px;
+    margin-bottom: 30px;
+    height: 265px;
+}
+
+.kickimg {
+    float: unset;
+    margin-top: 80px;
+    margin-bottom: 50px;
+    font-size: 32pt;
+    font-weight: 900;
+    text-align: center;
+    border: black;
+    border-style: solid;
+}
+
+.kickcheck {
+    width: 20px;
+    margin-left: 2px;
+    font-size: 12pt;
+}
+
+.equipmenttable {
+    float: left;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14pt;
+    font-weight: 300;
+}
+
+.adminbutton {
+    background-color: white;
+    border-style: none;
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    padding: 0px;
+
+}
+
+.adminbutton:focus {
+    outline: none;
+
+}
+
+
+.adminlink {
+    color: white;
+    position: fixed;
+    bottom: 0px;
+    right: 15px;
+}
+
+table {
+    width: 100%;
+
+}
+
+tbody {
+    overflow-y: scroll;
+}
+
+th {
+    min-width: 80px;
+    margin-left: 10px;
+    margin-right: 50px;
+    font-weight: 400;}
+
+td {
+    text-align: center;
+}
+
+img {
+    width: inherit;
+}
+
+.tablescroll {
+    margin-top: 15px;
+    overflow: auto;
+}
+
+.searchinput {
+    width: 300px;
+}
+
+input, select {
+    height: 24px;
+    margin: 0px;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-left-style: none;
+    border-top-style: none;
+    border-right-style: none;
+    border-bottom-style: ridge;
+    vertical-align: middle;
+    border-bottom-width: thin;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+/*input {
+    width: 100px;
+}*/
+
+select {
+    width: auto;
+}
+
+#add_scale {
+    height: 24px;
+    display: inline;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    vertical-align: middle;
+}
+
+#add_scale_value {
+    height: 24px;
+    float: none;
+    display: inline;
+    vertical-align: middle;
+}
+
+.row {
+    display: table-row;
+    width: 100%;
+    float: unset;
+}
+
+.cell {
+    display: table-cell;
+   /* width: 100%;*/
+
+}
+
+.kegbutton {
+    float: unset;
+    background-color: rgb(125,125,125);
+    color: rgb(255,255,255);
+    width: auto;
+    display: table;
+    padding: 5px;
+    margin-left: auto;
+    margin-right: 0;
+    font-weight: bold;
+}
+
+.kegbutton:hover,
+.kegbutton:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.unauthorized {
+    color: red;
+    display: none;
+}
+
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+    float: unset;
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+	<title>Kegshow - Manage Equipment</title>
+</head>
+<body>
+    <script src="admin.js"></script>
+    <script src="request.js"></script>
+
+<div class="section">
+	<div class="brewname" style="margin-bottom: 15px">Kegs</div>
+	<div>
+		<span>Add a new keg named</span><input id="add_id" type="text"></input>
+		<span>using the empty weight from </span><select id="add_scale"></select><span id="add_scale_value"></span>
+		<button class="adminbutton" onclick="addkeg()"><img src="add.png"></img></button>
+	</div>
+	<div class="tablescroll">
+		<table id="kegtable" class="equipmenttable" style="display: none;">
+			<thead>
+				<tr>
+					<th>Keg</th><th>Empty weight (g)</th><th></th>
+				</tr>
+			</thead>
+			<tbody id="kegtablebody">
+			<!-- dynamically populated by populatekegtable()-->
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="section">
+	<div class="brewname">Scales</div>
+	<div style="margin: 10px;"> Don't change unless you know what you're doing, or someone else does.</div>
+	<div class="tablescroll">
+		<table id="scaletable" class="equipmenttable" style="display: none;">
+			<tr>
+				<th>Scale</th><th>Offset</th><th>Ratio</th><th>DAT</th><th>CLK</th><th></th>
+			</tr>
+			<!-- dynamically populated populatescaletable()-->
+		</table>
+	</div>
+</div>
+
+<script>
+	populatescaletable();
+	refreshkegtable();
+</script>
+
+</body>
+</html>

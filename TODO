@@ -1,0 +1,20 @@
+
+Kick
+-make it look better
+
+Tap
+-Show loading icons while fetching recipes and sessions
+-Show a glass image next to the recipe to show color
+-make it look better
+
+log all flow events for a brew. useful for est kick date, fancy graph, recalibration
+
+Auto recalibration of flow meter based on initial volume, and logged ticks
+
+login for updates
+
+remove register button
+
+logout / unset cookie
+
+handle invalid user

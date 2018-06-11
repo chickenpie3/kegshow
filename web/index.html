@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <title>Kegshow - Login</title>
+</head>
+<body>
+    <script src="static/constants.js"></script>
+    <script src="static/request.js"></script>
+    <script>
+    	function onloginclick(e) {
+    		username = document.getElementById("username").value;
+    		password = document.getElementById("password").value;
+
+			request("POST", "login?username=" + username + "&password=" + password, null, function(response) {
+
+				document.cookie = "kegshow_token="+response.token;
+
+				//redirect to main
+				window.location.href = "ontap";
+
+			}, function() {
+				document.getElementById("unauthorized").style.display = "inline";
+			});
+    	}
+
+    	function onregisterclick(e) {
+    		window.location.href = "register";
+    	}
+    </script>
+	<div class="section">
+	    <div>Welcome to Kegshow</div>
+	    <div>
+	    	<span>Username:</span><input id="username" type="text"></input>
+	    </div>
+	    <div>
+	    	<span>Password:</span><input id="password" type="Password"></input>
+	    </div>
+	    <div>
+	    	<button onclick="onloginclick()">Login</button><button onclick="onregisterclick()">Register</button>
+	    </div>
+	    <div>
+	    	<span class="unauthorized" id="unauthorized">Invalid username/password</span>
+	    </div>
+	</div>
+</body>
+</html>
