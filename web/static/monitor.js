@@ -46,7 +46,7 @@ function monitor(topics, onmessage) {
 			region: 'us-east-1',
 			//
 			////Set the AWS IoT Host Endpoint
-			host:'a3tkzsco97gkug.iot.us-east-1.amazonaws.com',
+			host:'a3tkzsco97gkug-ats.iot.us-east-1.amazonaws.com',
 			//
 			// Use the clientId created earlier.
 			//
