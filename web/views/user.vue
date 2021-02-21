@@ -1,0 +1,63 @@
+<template>
+  <div>
+    <div v-for='b in brews' :key='b.flowmeter_id'>
+      <card :brew="b"></card>
+    </div>
+  </div>
+</template>
+
+
+<script>
+import card from '../components/card.vue'
+import monitor from '../static/monitor.js'
+
+function flowmessage(msg) {
+  let brew = this.brews[msg.flowmeter_id];
+  let flow = (msg.cumulative_flow * 1000.0) / brew.pulses_per_litre;
+
+  if (!brew.remaining_at_start_of_flow){
+      //remember the remaining amount
+      brew.remaining_at_start_of_flow = brew.remaining;
+  }
+
+  brew.remaining = brew.remaining_at_start_of_flow - flow;
+
+  if (!msg.flowing) {
+      brew.remaining_at_start_of_flow = brew.remaining;
+  }
+
+  console.log("remaining " + brew.remaining);
+}
+
+
+export default {
+  created() {
+    const axios = require('axios').default;
+    var api_base_url = "https://api.kegshow.com/v1/david";
+    var self = this;
+    axios.get(api_base_url + "/brew", )
+      .then(function (response) {
+        // handle success
+        var bs = {}
+        console.log(response);
+        for (let b of response.data.brews) {
+          bs[b.flowmeter_id]=b;
+        }
+        self.brews = bs;
+        monitor(response.data.devices, self.flowmessage);
+      })
+  },
+  data() {
+    return {
+      brews: {}
+    }
+  },
+  components: {
+    card
+  },
+  methods: {
+    flowmessage
+  }
+
+}
+</script>

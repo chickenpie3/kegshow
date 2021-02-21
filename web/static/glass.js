@@ -57,6 +57,8 @@ function updateGlass(destctx, fill, srm) {
 
 function renderGlass(destctx, fill, srm, width, height) {
 
+	console.log("rendering glass")
+
 	//let ctx = offscreenCanvas.getContext('2d');
 	let ctx = destctx;
 
