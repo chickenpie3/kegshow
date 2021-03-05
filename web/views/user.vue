@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-for='b in brews' :key='b.flowmeter_id'>
-      <card :brew="b"></card>
+      <card :brew="b" :brew_sessions="brew_sessions"></card>
     </div>
   </div>
 </template>
@@ -46,10 +46,30 @@ export default {
         self.brews = bs;
         monitor(response.data.devices, self.flowmessage);
       })
+
+    var axios2 = require('axios');
+    var config = {
+        method: 'get',
+        url: 'https://api.kegshow.com/v1/david/brewsessions',
+        headers: {
+            'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
+        }
+    };
+
+    axios2(config)
+    .then(function (response) {
+        // console.log(JSON.stringify(response.data));
+        self.brew_sessions = response.data.brewsessions;
+    })
+    .catch(function (error) {
+        console.log(error);
+    });
+
   },
   data() {
     return {
-      brews: {}
+      brews: {},
+      brew_sessions: []
     }
   },
   components: {

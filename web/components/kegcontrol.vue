@@ -56,14 +56,22 @@ export default {
     },
     data() {
         return {
-            brew_sessions : null,
             selected_brew_session : null,
             selected_brew_volume: 5
         }
     },
     props: {
+      brew_sessions : { type: Array },
       empty: { type: Boolean },
-      flowmeter_id: { type: String}
+      flowmeter_id: { type: String }
+    },
+    watch: {
+      'brew_sessions': function(newVal, oldVal) {
+        console.log('Prop changed: ', newVal, ' | was: ', oldVal)
+        if (newVal) {
+          this.selected_brew_session = newVal[0];
+        }
+      }
     },
     methods: {
         getDate: function() {

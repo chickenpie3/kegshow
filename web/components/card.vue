@@ -26,7 +26,7 @@
       </div>
     </swiper-slide>
     <swiper-slide class="swiper-slide">
-      <kegcontrol :empty="this.brew == null" :flowmeter_id="this.brew.flowmeter_id" v-on:keg-refilled="keg_refilled($event)"></kegcontrol>
+      <kegcontrol :empty="this.brew == null" :brew_sessions="this.brew_sessions" :flowmeter_id="this.brew.flowmeter_id" v-on:keg-refilled="keg_refilled($event)"></kegcontrol>
     </swiper-slide>    
   </swiper>
 
@@ -307,7 +307,8 @@ export default {
       renderGlass(this.$refs['glass-canvas'].getContext('2d'), this.brew.remaining/this.brew.volume, this.brew.recipe.srm, 88, 121)
     },
     props: {
-      brew: { type: Object }
+      brew: { type: Object },
+      brew_sessions:{ type: Array }
     },
     watch: { 
       'brew.remaining': function(newVal, oldVal) { 
