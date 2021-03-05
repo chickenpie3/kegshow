@@ -7,7 +7,7 @@
             <div class="brewname" id="name_KEG_ID">{{this.brew.recipe.name}}</div>
             <div class="brewstyle" id="style_KEG_ID" :style="'color:' + getRGBforSRM(this.brew.recipe.srm)">{{this.brew.recipe.style}}</div>
         </div>
-        <div>
+        <div style="display: grid">
           <div style="display: inline-block">
             <div class="stat"><div class="statname">ABV</div><div class="value" id="abv_KEG_ID">{{this.brew.recipe.abv}}</div></div>
             <div class="stat"><div class="statname">IBU</div><div class="value" id="ibu_KEG_ID">{{this.brew.recipe.ibu}}</div></div>
@@ -15,7 +15,7 @@
             <div class="stat"><div class="statname">OG</div><div class="value"  id="og_KEG_ID">{{this.brew.recipe.og}}</div></div>
             <div class="stat"><div class="statname">FG</div><div class="value"  id="fg_KEG_ID">{{this.brew.recipe.fg}}</div></div>
           </div>
-          <div class="glass" style="position: relative; width: 110px; height: 143px;">
+          <div class="glass" style="grid-column: 2; position: relative; width: 110px; height: 143px;">
             <canvas ref='glass-canvas' id="glass_KEG_ID" width="110" height="143" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
           </div>
         </div>
