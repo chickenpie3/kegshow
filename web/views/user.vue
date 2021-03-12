@@ -33,7 +33,7 @@ function flowmessage(msg) {
 export default {
   created() {
     const axios = require('axios').default;
-    var api_base_url = "https://api.kegshow.com/v1/david";
+    var api_base_url = "https://api.kegshow.com/v1/" + this.$route.params.user;
     var self = this;
     axios.get(api_base_url + "/brew", )
       .then(function (response) {
@@ -50,7 +50,7 @@ export default {
     var axios2 = require('axios');
     var config = {
         method: 'get',
-        url: 'https://api.kegshow.com/v1/david/brewsessions',
+        url: api_base_url + '/brewsessions',
         headers: {
             'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
         }
