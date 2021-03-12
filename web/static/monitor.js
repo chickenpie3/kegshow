@@ -5,7 +5,7 @@ var mqttTopics;
 var messageCallback;
 
 function mqttClientConnectHandler() {
-	console.log('connect');
+	console.log('mqtt connect');
 	for (var i = mqttTopics.length - 1; i >= 0; i--) {
 		let topic = "flow/" + mqttTopics[i] + "/#";
 		console.log('subscribing to ' + topic);
@@ -13,13 +13,34 @@ function mqttClientConnectHandler() {
 	}
 }
 
-function mqttClientMessageHandler(topic, payload) {
-    console.log('message');
-    console.log(topic);
+function mqttClientDisconnectHandler(/*packet*/) {
+  console.log('mqtt disconnect')
+}
 
+function mqttClientReconnectHandler() {
+  console.log('mqtt reconnect')
+}
+
+function mqttClientMessageHandler(topic, payload) {
     if (messageCallback) {
       messageCallback(JSON.parse(payload));
     }
+}
+
+function mqttClientErrorHandler(error) {
+  console.log('mqtt error: ' + error)
+}
+
+function mqttClientOfflineHandler() {
+  console.log('mqtt offline')
+}
+
+function mqttClientCloseHandler() {
+  console.log('mqtt close')
+}
+
+function mqttClientEndHandler() {
+  console.log('mqtt end')
 }
 
 
@@ -46,6 +67,9 @@ function refreshCredentials() {
         AWS.config.credentials.expireTime)
     
       var delay = AWS.config.credentials.expireTime - new Date() - 5*60*1000;
+
+      console.log("iot credentials valid until " + AWS.config.credentials.expireTime + ", next refresh in " + delay)
+
       setTimeout(refreshCredentials,  delay);
     }
   })
@@ -91,15 +115,22 @@ export default function monitor(topics, onmessage) {
         //
         // Enable console debugging information (optional)
         //
-        debug: true,
+        debug: false,
         accessKeyId: AWS.config.credentials.accessKeyId,
         secretKey: AWS.config.credentials.secretAccessKey,
         sessionToken: AWS.config.credentials.sessionToken
       });
       iotDevice.on('connect', mqttClientConnectHandler);
+      iotDevice.on('disconnect', mqttClientDisconnectHandler);
+      iotDevice.on('reconnect', mqttClientReconnectHandler);
       iotDevice.on('message', mqttClientMessageHandler);      
+      iotDevice.on('error', mqttClientErrorHandler);
+      iotDevice.on('offline', mqttClientOfflineHandler);
+      iotDevice.on('close', mqttClientCloseHandler);
+      iotDevice.on('end', mqttClientEndHandler);
 
       var delay = AWS.config.credentials.expireTime - new Date() - 5*60*1000;
+      console.log("iot credentials valid until " + AWS.config.credentials.expireTime + ", next refresh in " + delay)
       setTimeout(refreshCredentials,  delay);
     });
   }
