@@ -1,5 +1,6 @@
 import boto3
 import json
+from datetime import datetime
 
 dynamodb = boto3.client('dynamodb')
 
@@ -86,7 +87,7 @@ def update_brew(body):
         dynamodb.put_item(
             TableName='flow_history',
             Item={
-                'flowmeter_batch': { 'S': '_'.join([brew['flowmeter_id'], brew['tap_date']]) },
+                'flowmeter_batch': { 'S': '_'.join([brew['flowmeter_id'], str(brew['tap_date'])]) },
                 'timestamp': { 'S': datetime.now().isoformat() },
                 'remaining': { 'N': str(remaining) }
             }
