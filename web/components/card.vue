@@ -1,6 +1,6 @@
 <template>
 
-  <swiper ref="mySwiper" class="swiper" :slides-per-view="1" :space-between="0">
+  <swiper ref="mySwiper" class="swiper" :slides-per-view="1" :space-between="0" :no-swiping="true">
     <swiper-slide class="card-slide">
       <div class="card" id="card_KEG_ID">
         <div>
@@ -19,17 +19,19 @@
             <canvas ref='glass-canvas' id="glass_KEG_ID" width="110" height="143" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
           </div>
         </div>
-        
+
         <div class="stat"><div class="statname">Brewed</div><div class="value" id="brewdate_KEG_ID">{{this.brew_date}}</div></div>
         <div class="stat"><div class="statname">Tapped</div><div class="value" id="kegdate_KEG_ID">{{this.tap_date}}</div></div>
         <div class="stat"><div id="remaining_KEG_ID">{{this.keg_remaining}}</div></div>
+        <div class="swiper-no-swiping" style="margin: 17px 0px 0px 0px;" v-if="flow_history.length>1">
+          <GChart type="AreaChart" :data="flow_history" :options="chartOptions"></GChart>
+        </div>
       </div>
     </swiper-slide>
     <swiper-slide class="swiper-slide">
       <kegcontrol :empty="this.brew == null" :brew_sessions="this.brew_sessions" :flowmeter_id="this.brew.flowmeter_id" v-on:keg-refilled="keg_refilled($event)"></kegcontrol>
-    </swiper-slide>    
+    </swiper-slide>
   </swiper>
-
 
 </template>
 
@@ -42,6 +44,9 @@ import kegcontrol from '../components/kegcontrol.vue';
 import { Swiper, SwiperSlide} from 'vue-awesome-swiper'
 // import style (>= Swiper 6.x)
 import 'swiper/swiper-bundle.css'
+
+import { GChart } from 'vue-google-charts'
+
 
 var srm_rgb_values = {
 0: [249, 235, 190],  1:[241, 210, 128],
@@ -98,11 +103,11 @@ function createGlassGradient(ctx, width) {
 
 function renderTulip(ctx, fill, srm, width, height) {
 
-   
+
   ctx.save();
   ctx.translate(2,2);
 
-  
+
   function drawContour() {
     ctx.save();
     ctx.scale(0.2, 0.2);
@@ -120,7 +125,7 @@ function renderTulip(ctx, fill, srm, width, height) {
     ctx.bezierCurveTo(87.970, 698.591,296.434, 700.409,343.587, 678.697);
     ctx.bezierCurveTo(371.047, 666.053,350.577, 641.037,294.553, 618.774);
     ctx.bezierCurveTo(263.757, 606.536,240.093, 589.185,232.160, 573.026);
-    ctx.bezierCurveTo(225.255, 558.960,229.591, 534.225,243.908, 506.018);  
+    ctx.bezierCurveTo(225.255, 558.960,229.591, 534.225,243.908, 506.018);
     ctx.lineTo(249.673, 494.659, 261.002, 489.772);
     ctx.bezierCurveTo(333.870, 458.344,377.691, 409.755,393.837, 342.484);
     ctx.bezierCurveTo(405.759, 292.809,400.916, 251.480,370.803, 145.933);
@@ -133,12 +138,12 @@ function renderTulip(ctx, fill, srm, width, height) {
   drawContour();
 
   ctx.clip();
-  
+
   // ctx.save();
-  
+
   ctx.fillStyle = 'rgb(190,190,200)';
   ctx.fill();
-  
+
   // ctx.restore();
   if (fill < 0) {
     fill = 0;
@@ -152,14 +157,14 @@ function renderTulip(ctx, fill, srm, width, height) {
   var head = fill * 25;
   var h1y = height * (1-fill);
   var h2y = h1y + head;
-  
+
   ctx.fillStyle = getRGBforSRM_imp(srm);
   ctx.beginPath();
   ctx.arc(40, 40, 60, 1.3, Math.PI-1.3);
   ctx.fill();
 
 	ctx.fillRect(0, h2y, width, height - h2y);
-  
+
   ctx.fillStyle = 'rgb(255, 254, 242)';
   ctx.fillRect(0, h1y, width, head);
 
@@ -300,20 +305,53 @@ function renderStraightGlass(destctx, fill, srm, width, height) {
     //destctx.putImageData(image, 0, 0);
 }
 
+function getChartTooltip(date, remaining_ml) {
+  const dateFormat = require('dateformat');
+  const thisYear = new Date().getFullYear();
+  var ttDate = thisYear == date.getFullYear() ? dateFormat(date, "mmmm dS") : dateFormat(date, "mmmm dS yyyy");
+  var remaining = (remaining_ml/450.0).toFixed(1);
+  return ttDate + "\n" + remaining + " pints remaining";
+}
+
 export default {
     name: 'card',
 
-    mounted () {      
+    mounted () {
       renderGlass(this.$refs['glass-canvas'].getContext('2d'), this.brew.remaining/this.brew.volume, this.brew.recipe.srm, 88, 121)
+
+      const axios = require('axios').default;
+      var api_base_url = "https://api.kegshow.com/v1/" + this.$route.params.user;
+      var self = this;
+      axios.get(api_base_url + "/flowhistory?flowmeter_id=" + this.brew.flowmeter_id)
+        .then(function (response) {
+          // handle success
+          const formatted = response['data']['flow_history'].map(
+            datapoint => {
+              var date = new Date(datapoint[0]+"Z");
+              var remaining = datapoint[1] < 0 ? 0 : datapoint[1];
+              return [date, remaining, getChartTooltip(date, remaining)]
+            });
+          self.flow_history = [].concat([['Date', 'Remaining', {role: 'tooltip'}]], formatted);
+          console.log(self.flow_history);
+        })
+
     },
     props: {
       brew: { type: Object },
-      brew_sessions:{ type: Array }
+      brew_sessions: { type: Array }
     },
-    watch: { 
-      'brew.remaining': function(newVal, oldVal) { 
+    data: function () {
+      return { 'flow_history': [] };
+    },
+    watch: {
+      'brew.remaining': function(newVal, oldVal) {
         console.log('Prop changed: ', newVal, ' | was: ', oldVal)
         if (newVal != oldVal) {
+          if (newVal < 0) {
+            newVal = 0;
+          }
+          var now = new Date();
+          this.flow_history.push([now, newVal, getChartTooltip(now, newVal)])
           var volume = this.brew.volume;
           var srm = this.brew.recipe.srm;
           var ctx = this.$refs['glass-canvas'].getContext('2d');
@@ -325,7 +363,7 @@ export default {
       }
     },
     computed: {
-      brew_date: function() {    
+      brew_date: function() {
         const dateFormat = require('dateformat');
         return dateFormat(new Date(this.brew.brew_date*1000), "mmmm dS yyyy");
       },
@@ -340,6 +378,46 @@ export default {
         var pintml = 450.0;
         var pints = this.brew.remaining/pintml;
         return "About " + pints.toFixed(1) + " pints remaining";
+      },
+      chartOptions: function() {
+        return {
+          height: 147,
+          chartArea: {width: '100%', height: '100%'},
+          colors: [getRGBforSRM_imp(this.brew.recipe.srm)],
+          lineWidth: 1,
+          hAxis: {
+            textPosition: 'none',
+            gridlines: {
+              count: 0,
+              color: 'transparent'
+            }
+          },
+          vAxis: {
+            textPosition: 'none',
+            gridlines: {
+              count: 0,
+              color: 'transparent'
+            },
+            baseline: 0,
+            baselineColor: 'transparent'
+          },
+          legend: {position: 'none'},
+          animation: {
+            startup: true,
+            duration: 500,
+            easing: 'out'
+          },
+          crosshair: {
+            trigger: 'focus',
+            orientation: 'vertical'
+          },
+          explorer: {
+            keepInBounds: true,
+            maxZoomIn: 0.01,
+            zoomDelta: 1.1,
+            axis: 'horizontal'
+          }
+        }
       }
     },
     methods: {
@@ -375,7 +453,8 @@ export default {
     components: {
       kegcontrol,
       Swiper,
-      SwiperSlide
+      SwiperSlide,
+      GChart
     }
 }
 </script>
