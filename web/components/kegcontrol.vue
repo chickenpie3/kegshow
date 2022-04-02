@@ -1,28 +1,37 @@
 <template>
-    <div class="card">
-        
-        <div class="img-container">
-            <img src="../images/tap.png">
-        </div>            
-        
-        <div class="kickdate">
+    <div>
+
+        <!-- <div class="kickdate">
             <label>Kicked on:<input type="date" :value="this.getDate()"></label>
         </div>
         <div>
             <label><input type='checkbox'>Recalibrate this keg</label>
-        </div>
-        <fieldset>
-            <legend>New Brew</legend>
-            <label for="brewsessions">Recipe:</label>
-            <select name="brewsessions" id="brewsessions" v-model="selected_brew_session" @change="fetch_selected_recipe()">
-                <option v-for="s in this.brew_sessions" :key="s.id" :value="s">{{s.recipe_title}}</option>
-            </select>
-        
-            <label>Volume: <input type='number' v-model="selected_brew_volume"> us gal</label>
-        
-            <div class="btn" @click="fillKeg()">Replace Keg</div>
-        </fieldset>
-    </div>    
+        </div> -->
+        <div class="section-title">New Keg</div>
+
+        <label for="brewsessions">Recipe:</label>
+        <select name="brewsessions" id="brewsessions" v-model="selected_brew_session" @change="fetch_selected_recipe()">
+            <option v-for="s in this.brew_sessions" :key="s.id" :value="s">{{s.recipe_title}}</option>
+        </select>
+
+        <label>Volume: <input type='number' v-model="selected_brew_volume"> us gal</label>
+        <div class="btn" @click="fillKeg()">Replace</div>
+
+        <!-- <div class="section-title">Empty Keg</div>
+        <label>Kicked on:<input type="date" :value="this.getDate()"></label>
+        <div class="btn" @click="emptyKeg()">Empty</div>
+
+        <div class="section-title">Calibration</div>
+        Current: 450 pulses per liter <br /><br />
+        <label>Pulses: 0</label><br />
+        <label>Volume: <input type="number" value="0" :disabled="!calibration_started" />ml</label>
+        <div class="btn" @click="calibrate()">{{ calibration_started ? 'Calibrate' : 'Start' }}</div> -->
+
+        <div class="section-title"></div>
+        <div class="btn" @click="$emit('close')">Exit</div>
+        <div class="section-title"></div>
+
+    </div>
 </template>
 
 <script>
@@ -30,13 +39,13 @@ export default {
     name: 'kegcontrol',
     created() {
         if (!this.brew_sessions) {
-            
+
             var self = this;
             var axios = require('axios');
             var config = {
                 method: 'get',
                 url: 'https://api.kegshow.com/v1/david/brewsessions',
-                headers: { 
+                headers: {
                     'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
                 }
             };
@@ -52,12 +61,16 @@ export default {
             .catch(function (error) {
                 console.log(error);
             });
+        } else {
+            this.selected_brew_session = this.brew_sessions[0];
         }
+        this.fetch_selected_recipe();
     },
     data() {
         return {
             selected_brew_session : null,
-            selected_brew_volume: 5
+            selected_brew_volume: 5,
+            calibration_started: false
         }
     },
     props: {
@@ -76,7 +89,7 @@ export default {
     methods: {
         getDate: function() {
             const dateFormat = require('dateformat');
-            var date = dateFormat(new Date(), "yyyy-mm-dd");            
+            var date = dateFormat(new Date(), "yyyy-mm-dd");
             console.log(date)
             return date;
         },
@@ -91,7 +104,7 @@ export default {
                 var config = {
                     method: 'get',
                     url: 'https://api.kegshow.com/v1/david/recipes/' + self.selected_brew_session.recipeid,
-                    headers: { 
+                    headers: {
                         'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
                     }
                 };
@@ -118,7 +131,7 @@ export default {
                 fg: bf_recipe.fg,
                 snapshot: bf_recipe.snapshot
             }
-            
+
             console.log(ks_recipe);
 
             var self = this;
@@ -147,22 +160,34 @@ export default {
                     recipe: JSON.stringify(ks_recipe)};
 
             axios.post('https://api.kegshow.com/v1/david/brew', new_brew)
-            .then(function (response) {                
+            .then(function (response) {
                 console.log(response);
                 new_brew.recipe = ks_recipe;
                 console.log(new_brew);
                 self.$emit('keg-refilled', new_brew);
+                self.$emit('close');
             })
             .catch(function (error) {
                 console.log(error);
             });
+        },
+        emptyKeg() {
+
+        },
+        calibrate() {
+            if (this.calibration_started) {
+                console.log("Calibrating");
+            } else {
+                console.log("Starting Calibration");
+            }
+            this.calibration_started = !this.calibration_started;
         }
     }
 }
 </script>
 
 <style scoped>
- 
+
 input, select {
     height: 24px;
     border-left-style: none;
@@ -173,6 +198,7 @@ input, select {
     font-family: inherit;
     font-size: inherit;
     font-weight: inherit;
+    margin-left: 5px;
 }
 
 input[type=checkbox], input[type=radio] {
@@ -184,32 +210,25 @@ input[type=checkbox], input[type=radio] {
 input[type=number] {
     max-width: 30px;
 }
+
 input:focus, select:focus {
     outline: none;
 }
-
+/*
 label {
     margin: 5px;
-}
+} */
 
-img {
-    width: 60%;
-    /* max-height: 180px; */
-}
-
-.img-container {
-    text-align: center;
-    margin: 5px;
-}
-
-.card label {
-    margin-left: 5px;
-    /* margin-right: 15px;
-    vertical-align: bottom; */
+.section-title {
+    margin-top: 25px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    line-height: 150%;
+    clear: both;
 }
 
 .btn {
-    display: inline-block;
+    /* display: inline-block; */
     background: lightgray;
     border-color: gray;
     border-style: solid;
@@ -217,6 +236,7 @@ img {
     text-align: center;
     padding: 5px 20px;
     margin: 20px 0px;
+    float: right;
 }
 
 .btn:hover {
@@ -229,7 +249,7 @@ img {
 .btn:active {
     background: white;
     border-color: black;
-    border-radius: 3px;    
+    border-radius: 3px;
 }
 
 

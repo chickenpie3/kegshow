@@ -1,13 +1,13 @@
 <template>
 
-  <swiper ref="mySwiper" class="swiper" :slides-per-view="1" :space-between="0" :no-swiping="true">
-    <swiper-slide class="card-slide">
+  <!-- <swiper ref="mySwiper" class="swiper" :slides-per-view="1" :space-between="0" :no-swiping="true"> -->
+    <!-- <swiper-slide class="card-slide"> -->
       <div class="card" id="card_KEG_ID">
-        <div>
+        <div class="cardrow" style="height:130px;">
             <div class="brewname" id="name_KEG_ID">{{this.brew.recipe.name}}</div>
             <div class="brewstyle" id="style_KEG_ID" :style="'color:' + getRGBforSRM(this.brew.recipe.srm)">{{this.brew.recipe.style}}</div>
         </div>
-        <div style="display: grid">
+        <div class="cardrow">
           <div style="display: inline-block">
             <div class="stat"><div class="statname">ABV</div><div class="value" id="abv_KEG_ID">{{this.brew.recipe.abv}}</div></div>
             <div class="stat"><div class="statname">IBU</div><div class="value" id="ibu_KEG_ID">{{this.brew.recipe.ibu}}</div></div>
@@ -15,38 +15,57 @@
             <div class="stat"><div class="statname">OG</div><div class="value"  id="og_KEG_ID">{{this.brew.recipe.og}}</div></div>
             <div class="stat"><div class="statname">FG</div><div class="value"  id="fg_KEG_ID">{{this.brew.recipe.fg}}</div></div>
           </div>
-          <div class="glass" style="grid-column: 2; position: relative; width: 110px; height: 143px;">
+          <div class="glass" @click="showModal = true" style="grid-column: 2; position: relative; width: 110px; height: 143px;">
             <canvas ref='glass-canvas' id="glass_KEG_ID" width="110" height="143" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
           </div>
         </div>
 
-        <div class="stat"><div class="statname">Brewed</div><div class="value" id="brewdate_KEG_ID">{{this.brew_date}}</div></div>
-        <div class="stat"><div class="statname">Tapped</div><div class="value" id="kegdate_KEG_ID">{{this.tap_date}}</div></div>
-        <div class="stat"><div id="remaining_KEG_ID">{{this.keg_remaining}}</div></div>
-        <div class="swiper-no-swiping" style="margin: 17px 0px 0px 0px;" v-if="flow_history.length>1">
-          <GChart type="AreaChart" :data="flow_history" :options="chartOptions"></GChart>
+        <div class="stat cardrow"><div class="statname">Brewed</div><div class="value" id="brewdate_KEG_ID">{{this.brew_date}}</div></div>
+        <div class="stat cardrow"><div class="statname">Tapped</div><div class="value" id="kegdate_KEG_ID">{{this.tap_date}}</div></div>
+        <div class="stat cardrow"><div id="remaining_KEG_ID">{{this.keg_remaining}}</div></div>
+      <div class="cardrow">
+        <div
+
+         style="margin: 17px 0px 0px 0px;" v-if="flow_history.length>1">
+          <GChart ref="chart" type="AreaChart" :data="flow_history" :options="chartOptions" @ready="on_ready(chart, google)"></GChart>
         </div>
+        <div class="firstdate">{{this.firstDate}}</div>
+        <div class="lastdate">{{this.lastDate}}</div>
       </div>
-    </swiper-slide>
-    <swiper-slide class="swiper-slide">
-      <kegcontrol :empty="this.brew == null" :brew_sessions="this.brew_sessions" :flowmeter_id="this.brew.flowmeter_id" v-on:keg-refilled="keg_refilled($event)"></kegcontrol>
-    </swiper-slide>
-  </swiper>
+
+      <Teleport to="body">
+        <!-- use the modal component, pass in the prop -->
+        <modal :show="showModal">
+          <template #body>
+            <kegcontrol :empty="brew == null" :brew_sessions="brew_sessions" :flowmeter_id="brew.flowmeter_id" v-on:keg-refilled="keg_refilled($event)" @close="showModal = false"></kegcontrol>
+          </template>
+        </modal>
+      </Teleport>
+
+      </div>
+    <!-- </swiper-slide> -->
+    <!-- <swiper-slide class="swiper-slide"> -->
+      <!-- <kegcontrol :empty="this.brew == null" :brew_sessions="this.brew_sessions" :flowmeter_id="this.brew.flowmeter_id" v-on:keg-refilled="keg_refilled($event)"></kegcontrol> -->
+    <!-- </swiper-slide> -->
+  <!-- </swiper> -->
+
+
 
 </template>
 
 
 <script>
 
-import kegcontrol from '../components/kegcontrol.vue';
+import kegcontrol from './kegcontrol.vue';
 
 //Initialize swiper
-import { Swiper, SwiperSlide} from 'vue-awesome-swiper'
+// import { Swiper, SwiperSlide} from 'vue-awesome-swiper'
 // import style (>= Swiper 6.x)
-import 'swiper/swiper-bundle.css'
+// import 'swiper/swiper-bundle.css'
 
 import { GChart } from 'vue-google-charts'
 
+import Modal from './modal.vue'
 
 var srm_rgb_values = {
 0: [249, 235, 190],  1:[241, 210, 128],
@@ -306,11 +325,14 @@ function renderStraightGlass(destctx, fill, srm, width, height) {
 }
 
 function getChartTooltip(date, remaining_ml) {
+  var remaining = (remaining_ml/450.0).toFixed(1);
+  return formatChartDate(date) + "\n" + remaining + " pints remaining";
+}
+
+function formatChartDate(date) {
   const dateFormat = require('dateformat');
   const thisYear = new Date().getFullYear();
-  var ttDate = thisYear == date.getFullYear() ? dateFormat(date, "mmmm dS") : dateFormat(date, "mmmm dS yyyy");
-  var remaining = (remaining_ml/450.0).toFixed(1);
-  return ttDate + "\n" + remaining + " pints remaining";
+  return thisYear == date.getFullYear() ? dateFormat(date, "mmmm dS") : dateFormat(date, "mmmm dS yyyy");
 }
 
 export default {
@@ -324,15 +346,34 @@ export default {
       var self = this;
       axios.get(api_base_url + "/flowhistory?flowmeter_id=" + this.brew.flowmeter_id)
         .then(function (response) {
-          // handle success
-          const formatted = response['data']['flow_history'].map(
-            datapoint => {
-              var date = new Date(datapoint[0]+"Z");
-              var remaining = datapoint[1] < 0 ? 0 : datapoint[1];
-              return [date, remaining, getChartTooltip(date, remaining)]
-            });
-          self.flow_history = [].concat([['Date', 'Remaining', {role: 'tooltip'}]], formatted);
-          console.log(self.flow_history);
+
+          if (response.data.flow_history.length > 0) {
+
+            let lastDate = new Date(response['data']['flow_history'][0][0]+'Z');
+            self.firstDate = formatChartDate(lastDate);
+            let lastRemaining = response['data']['flow_history'][0][1];
+            const formatted = [['Date', 'Remaining', {role: 'tooltip'}]];
+
+            const timeSpan = new Date(response['data']['flow_history'][response['data']['flow_history'].length - 1][0]+'Z') - lastDate;
+            const msPerPx = timeSpan/350.0;
+            const maxPxForLine = 5;
+            const maxMsForLine = msPerPx * maxPxForLine;
+            console.log("max mins for line: " + maxMsForLine/60000);
+
+            for (let datapoint of response['data']['flow_history']) {
+              const date = new Date(datapoint[0]+"Z");
+              const remaining = datapoint[1] < 0 ? 0 : datapoint[1];
+              if (date - lastDate > maxMsForLine) {
+                const justBefore = new Date(date.getTime()-1);
+                formatted.push([justBefore, lastRemaining, getChartTooltip(justBefore, lastRemaining)])
+              }
+              formatted.push([date, remaining, getChartTooltip(date, remaining)])
+              lastDate = date;
+              lastRemaining = remaining;
+            }
+            self.lastDate = formatChartDate(lastDate);
+            self.flow_history = formatted;
+          }
         })
 
     },
@@ -341,7 +382,12 @@ export default {
       brew_sessions: { type: Array }
     },
     data: function () {
-      return { 'flow_history': [] };
+      return {
+        'flow_history': [],
+        firstDate: '',
+        lastDate: '',
+        showModal: false
+        };
     },
     watch: {
       'brew.remaining': function(newVal, oldVal) {
@@ -352,6 +398,7 @@ export default {
           }
           var now = new Date();
           this.flow_history.push([now, newVal, getChartTooltip(now, newVal)])
+          this.lastDate = formatChartDate(now);
           var volume = this.brew.volume;
           var srm = this.brew.recipe.srm;
           var ctx = this.$refs['glass-canvas'].getContext('2d');
@@ -381,16 +428,16 @@ export default {
       },
       chartOptions: function() {
         return {
-          height: 147,
-          chartArea: {width: '100%', height: '100%'},
+          chartArea: {left:0,top:0,width:'100%',height:'100%'},
           colors: [getRGBforSRM_imp(this.brew.recipe.srm)],
           lineWidth: 1,
           hAxis: {
-            textPosition: 'none',
+            // textPosition: 'none',
             gridlines: {
               count: 0,
               color: 'transparent'
-            }
+            },
+            ticks: [this.flow_history[1][0], this.flow_history[this.flow_history.length - 1][0]]
           },
           vAxis: {
             textPosition: 'none',
@@ -448,13 +495,25 @@ export default {
             }
           }
         )
+      },
+      on_ready(chart, google) {
+        console.log("ready");
+        console.log(chart);
+        console.log(google);
+        let c = this.$refs['chart'].chartObject;
+        console.log(c);
+        let cli = c.getChartLayoutInterface();
+        console.log(cli);
+        let h = cli.getPointDatum(0);
+        console.log(h);
       }
     },
     components: {
       kegcontrol,
-      Swiper,
-      SwiperSlide,
-      GChart
+      // Swiper,
+      // SwiperSlide,
+      GChart,
+      Modal
     }
 }
 </script>
@@ -466,13 +525,16 @@ export default {
   margin: 15px;
 }
 
+.cardrow {
+  display: table-row;
+}
+
 .card {
     background-color: #FFFFFF;
     padding: 15px;
     width: 350px;
     flex-shrink: 0;
-    height: auto;
-    min-height: 475px;
+    display: table;
 }
 
 .brewname {
@@ -508,6 +570,16 @@ export default {
 .glass {
     margin-left: 130px;
     float: right;
+}
+
+.firstdate {
+  float: left;
+  font-size: small;
+}
+
+.lastdate {
+  float: right;
+  font-size: small;
 }
 
 </style>

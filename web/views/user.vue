@@ -1,8 +1,8 @@
 <template>
-  <div>
-    <div v-for='b in brews' :key='b.flowmeter_id'>
-      <card :brew="b" :brew_sessions="brew_sessions"></card>
-    </div>
+  <div class="brew-grid">
+    <!-- <div class="brew-card" v-for='b in brews' :key='b.flowmeter_id'> -->
+      <card v-for='b in brews' :key='b.flowmeter_id' :brew="b" :brew_sessions="brew_sessions" class="brew-card"></card>
+    <!-- </div> -->
   </div>
 </template>
 
@@ -81,3 +81,17 @@ export default {
 
 }
 </script>
+
+<style scoped>
+
+.brew-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+}
+
+.brew-card {
+  margin: 15px;
+}
+
+</style>
