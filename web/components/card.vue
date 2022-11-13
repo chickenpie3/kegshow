@@ -49,11 +49,7 @@
       <!-- <kegcontrol :empty="this.brew == null" :brew_sessions="this.brew_sessions" :flowmeter_id="this.brew.flowmeter_id" v-on:keg-refilled="keg_refilled($event)"></kegcontrol> -->
     <!-- </swiper-slide> -->
   <!-- </swiper> -->
-
-
-
 </template>
-
 
 <script>
 
@@ -96,28 +92,13 @@ export default {
         firstDate: '',
         lastDate: '',
         showModal: false
-        };
+      };
     },
-    // watch: {
-    //   'brew.remaining': function(newVal, oldVal) {
-    //     console.log('Prop changed: ', newVal, ' | was: ', oldVal)
-    //     if (newVal != oldVal) {
-    //       if (newVal < 0) {
-    //         newVal = 0;
-    //       }
-    //       var now = new Date();
-    //       this.flow_history.push([now, newVal, getChartTooltip(now, newVal)])
-    //       this.lastDate = formatChartDate(now);
-    //       var volume = this.brew.volume;
-    //       var srm = this.brew.recipe.srm;
-    //       var ctx = this.$refs['glass-canvas'].getContext('2d');
-    //       requestAnimationFrame(function() {
-    //         ctx.clearRect(0, 0, 110, 143)
-    //         renderGlass(ctx, newVal/volume, srm, 88, 121)
-    //       });
-    //     }
-    //   }
-    // },
+    watch: {
+      brew: function() {
+        this.update_history();
+      }
+    },
     computed: {
       brew_color: function() {
         return rgb_for_srm(parseFloat(this.brew.recipe.srm));
@@ -238,8 +219,8 @@ export default {
         })
       },
       keg_refilled: function(new_brew) {
-        this.brew = new_brew;
-        this.update_history();
+        // Have user.vue refetch the brews and update the card props. Not sure if there is a cleaner way to propagate the event.
+        this.$emit('keg-refilled', new_brew);
       },
       animate: function() {
         let self = this;

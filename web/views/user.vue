@@ -1,7 +1,7 @@
 <template>
   <div class="brew-grid">
     <!-- <div class="brew-card" v-for='b in brews' :key='b.flowmeter_id'> -->
-      <card v-for='b in brews' :key='b.flowmeter_id' :brew="b" :brew_sessions="brew_sessions" class="brew-card"></card>
+      <card v-for='b in brews' :key='b.flowmeter_id' :brew="b" :brew_sessions="brew_sessions" v-on:keg-refilled="keg_refilled($event)" class="brew-card"></card>
     <!-- </div> -->
   </div>
 </template>
@@ -38,54 +38,62 @@ function flowmessage(msg) {
 
 export default {
   created() {
-    const axios = require('axios').default;
-    var api_base_url = "https://api.kegshow.com/v1/" + this.$route.params.user;
-    var self = this;
-    axios.get(api_base_url + "/brew", )
-      .then(function (response) {
-        // handle success
-        var bs = {}
-        console.log(response);
-        for (let b of response.data.brews) {
-          b.pulses = 0;
-          bs[b.flowmeter_id]=b;
-        }
-        self.brews = bs;
-        monitor(response.data.devices, self.flowmessage);
-      })
+    this.api_base_url = "https://api.kegshow.com/v1/" + this.$route.params.user;
+    this.fetchBrews(true);
 
     var axios2 = require('axios');
     var config = {
-        method: 'get',
-        url: api_base_url + '/brewsessions',
-        headers: {
-            'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
-        }
+      method: 'get',
+      url: this.api_base_url + '/brewsessions',
+      headers: {
+          'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
+      }
     };
 
+    var self = this;
     axios2(config)
-    .then(function (response) {
-        // console.log(JSON.stringify(response.data));
-        self.brew_sessions = response.data.brewsessions;
-    })
-    .catch(function (error) {
-        console.log(error);
-    });
-
+      .then(function (response) {
+          // console.log(JSON.stringify(response.data));
+          self.brew_sessions = response.data.brewsessions;
+      })
+      .catch(function (error) {
+          console.log(error);
+      });
   },
   data() {
     return {
       brews: {},
-      brew_sessions: []
+      brew_sessions: [],
+      api_base_url: ''
     }
   },
   components: {
     card
   },
   methods: {
-    flowmessage
+    flowmessage,
+    fetchBrews: function(startMonitoring) {
+      const axios = require('axios').default;
+      var self = this;
+      axios.get(self.api_base_url + "/brew")
+        .then(function (response) {
+          var bs = {}
+          console.log(response);
+          for (let b of response.data.brews) {
+            b.pulses = 0;
+            bs[b.flowmeter_id]=b;
+          }
+          self.brews = bs;
+          if (startMonitoring) {
+            monitor(response.data.devices, self.flowmessage);
+          }
+        });
+    },
+    keg_refilled: function(/*newBrew*/) {
+      // Could be smarter about this and only update the relevant fields from newBrew
+      this.fetchBrews();
+    }
   }
-
 }
 </script>
 
