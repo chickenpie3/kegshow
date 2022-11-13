@@ -12,4 +12,6 @@ BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name kegshow-web-prd --
 npm run build ./main.js
 aws s3 sync ./dist "s3://${BUCKET_NAME}"
 
-aws cloudfront create-invalidation --distribution-id "${DISTRIBUTION_ID}" --paths /\* --no-cli-pager
+INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id "${DISTRIBUTION_ID}" --paths /\* --output text --query "Invalidation.Id")
+
+aws cloudfront wait invalidation-completed --distribution-id "${DISTRIBUTION_ID}" --id "${INVALIDATION_ID}"
