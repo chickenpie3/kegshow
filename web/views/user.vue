@@ -19,14 +19,20 @@ function flowmessage(msg) {
       //remember the remaining amount
       brew.remaining_at_start_of_flow = brew.remaining;
   }
+  if (!brew.pulses_at_start_of_flow){
+      //remember the remaining amount
+      brew.pulses_at_start_of_flow = 0;
+  }
 
+  brew.pulses = msg.cumulative_flow + brew.pulses_at_start_of_flow;
   brew.remaining = brew.remaining_at_start_of_flow - flow;
 
   if (!msg.flowing) {
       brew.remaining_at_start_of_flow = brew.remaining;
+      brew.pulses_at_start_of_flow = brew.pulses;
   }
 
-  console.log("remaining " + brew.remaining);
+  console.log(`${msg.flowmeter_id}: ${brew.remaining} remaining, ${brew.pulses} pulses`);
 }
 
 
@@ -41,6 +47,7 @@ export default {
         var bs = {}
         console.log(response);
         for (let b of response.data.brews) {
+          b.pulses = 0;
           bs[b.flowmeter_id]=b;
         }
         self.brews = bs;

@@ -38,7 +38,7 @@
         <!-- use the modal component, pass in the prop -->
         <modal :show="showModal">
           <template #body>
-            <kegcontrol :empty="brew == null" :brew_sessions="brew_sessions" :flowmeter_id="brew.flowmeter_id" v-on:keg-refilled="keg_refilled($event)" @close="showModal = false"></kegcontrol>
+            <kegcontrol :brew="brew" :brew_sessions="brew_sessions" :flowmeter_id="brew.flowmeter_id" v-on:keg-refilled="keg_refilled($event)" @close="showModal = false"></kegcontrol>
           </template>
         </modal>
       </Teleport>
@@ -188,13 +188,17 @@ export default {
         if (style.includes("irish")) {
           return 'irish';
         }
-        if (style.includes("pils") || style.includes('witbier')) {
+        if (style.includes("pils")) {
           return 'pilsner';
+        }
+        if (style.includes('witbier')) {
+          return 'weizen';
         }
         if (style.includes("american")) {
           return 'american';
         }
         return 'nonic';
+        //willibecher
       }
     },
     methods: {

@@ -1,1 +1,1 @@
-var api_base_url = "https://api.kegshow.com/test"
+var api_base_url = "https://api.kegshow.com/v1"

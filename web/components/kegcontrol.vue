@@ -17,15 +17,16 @@
         <label>Volume: <input type='number' v-model="selected_brew_volume"> us gal</label>
         <div class="btn" @click="fillKeg()">Replace</div>
 
+        <div class="section-title">Calibration</div>
+        Current: {{this.brew.pulses_per_litre}} pulses per liter <br /><br />
+        <label>Pulses: {{pulses}}</label><br />
+        <label>Volume: <input type="number" value="0" :disabled="!calibration_started" />ml</label>
+        <div class="btn" @click="calibrate()">{{ calibration_started ? 'Calibrate' : 'Start' }}</div>
+
         <!-- <div class="section-title">Empty Keg</div>
         <label>Kicked on:<input type="date" :value="this.getDate()"></label>
         <div class="btn" @click="emptyKeg()">Empty</div>
-
-        <div class="section-title">Calibration</div>
-        Current: 450 pulses per liter <br /><br />
-        <label>Pulses: 0</label><br />
-        <label>Volume: <input type="number" value="0" :disabled="!calibration_started" />ml</label>
-        <div class="btn" @click="calibrate()">{{ calibration_started ? 'Calibrate' : 'Start' }}</div> -->
+        -->
 
         <div class="section-title"></div>
         <div class="btn" @click="$emit('close')">Exit</div>
@@ -37,6 +38,11 @@
 <script>
 export default {
     name: 'kegcontrol',
+    props: {
+      brew_sessions : { type: Array },
+      brew: { type: Object },
+      flowmeter_id: { type: String }
+    },
     created() {
         if (!this.brew_sessions) {
 
@@ -68,21 +74,25 @@ export default {
     },
     data() {
         return {
+            empty: this.brew == null,
             selected_brew_session : null,
             selected_brew_volume: 5,
-            calibration_started: false
+            calibration_started: false,
+            initial_pulses: 0,
+            pulses: 0
         }
-    },
-    props: {
-      brew_sessions : { type: Array },
-      empty: { type: Boolean },
-      flowmeter_id: { type: String }
     },
     watch: {
       'brew_sessions': function(newVal, oldVal) {
         console.log('Prop changed: ', newVal, ' | was: ', oldVal)
         if (newVal) {
           this.selected_brew_session = newVal[0];
+        }
+      },
+      'brew.pulses': function(newVal, oldVal) {
+        if (this.calibration_started) {
+          console.log(`brew.pulses ${oldVal} -> ${newVal}`);
+          this.pulses = newVal - this.initial_pulses;
         }
       }
     },
@@ -151,13 +161,14 @@ export default {
 
 
             var new_brew = {
-                    flowmeter_id: self.flowmeter_id,
-                    volume: self.selected_brew_volume * 3785,
-                    remaining: self.selected_brew_volume * 3785,
-                    kick_date: 0,
-                    tap_date: new Date().getTime() / 1000,
-                    brew_date: new Date(self.selected_brew_session.created_at).getTime() / 1000,
-                    recipe: JSON.stringify(ks_recipe)};
+                flowmeter_id: self.flowmeter_id,
+                volume: self.selected_brew_volume * 3785,
+                remaining: self.selected_brew_volume * 3785,
+                kick_date: 0,
+                tap_date: new Date().getTime() / 1000,
+                brew_date: new Date(self.selected_brew_session.created_at).getTime() / 1000,
+                recipe: JSON.stringify(ks_recipe)
+            };
 
             axios.post('https://api.kegshow.com/v1/david/brew', new_brew)
             .then(function (response) {
@@ -179,8 +190,27 @@ export default {
                 console.log("Calibrating");
             } else {
                 console.log("Starting Calibration");
+                let self = this;
+                this.calibration_started = true;
+                var axios = require('axios');
+                var config = {
+                    method: 'post',
+                    url: `https://api.kegshow.com/v1/${this.$route.params.user}/calibrate`,
+                    headers: {
+                        'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
+                    },
+                    data: { flowmeter_id: this.brew.flowmeter_id }
+                };
+                axios(config)
+                .then(function (response) {
+                    console.log(response);
+                    self.initial_pulses = self.brew.pulses;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                    self.calibration_started = false;
+                });
             }
-            this.calibration_started = !this.calibration_started;
         }
     }
 }
@@ -208,7 +238,8 @@ input[type=checkbox], input[type=radio] {
 }
 
 input[type=number] {
-    max-width: 30px;
+    max-width: 60px;
+    min-width: 60px;
 }
 
 input:focus, select:focus {
