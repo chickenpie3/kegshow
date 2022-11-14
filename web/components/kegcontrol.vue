@@ -113,15 +113,33 @@ export default {
                 var axios = require('axios');
                 var config = {
                     method: 'get',
-                    url: 'https://api.kegshow.com/v1/david/recipes/' + self.selected_brew_session.recipeid,
+                    url: `https://api.kegshow.com/v1/david/brewsessions/${this.selected_brew_session.id}`,
                     headers: {
                         'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
                     }
                 };
                 axios(config)
                 .then(function (response) {
-                    console.log(response.data.recipes[0]);
-                    self.selected_brew_session.recipe = response.data.recipes[0];
+                    console.log(response.data);
+                    const session = response.data.brewsessions[0];
+                    self.selected_brew_session.recipe = session.recipe;
+                    // Replace recipe values with actual ones from the brew session
+                    if (session.current_stats.og) {
+                        self.selected_brew_session.recipe.og = session.current_stats.og;
+                    }
+                    if (session.current_stats.fg) {
+                        self.selected_brew_session.recipe.fg = session.current_stats.fg;
+                    }
+                    if (session.current_stats.abv) {
+                        self.selected_brew_session.recipe.abv = session.current_stats.abv.toFixed(2);
+                    }
+                    //Check for style description
+                    if (session.recipe.notes) {
+                        const moreData = JSON.parse(session.recipe.notes);
+                        if (moreData.styleDescription) {
+                            self.selected_brew_session.recipe.stylename = moreData.styleDescription;
+                        }
+                    }
                 })
                 .catch(function (error) {
                     console.log(error);
