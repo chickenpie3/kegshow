@@ -97,6 +97,18 @@ export default {
     watch: {
       brew: function() {
         this.update_history();
+      },
+      'brew.remaining': function() {
+        const date = new Date();
+        const remaining = this.brew.remaining < 0 ? 0 : this.brew.remaining;
+        // Ignore for now
+        // let lastDate = this.lastDate;
+        // if (date - lastDate > maxMsForLine) {
+        //   const justBefore = new Date(date.getTime()-1);
+        //   formatted.push([justBefore, lastRemaining, getChartTooltip(justBefore, lastRemaining)])
+        // }
+        this.flow_history.push([date, remaining, getChartTooltip(date, remaining)]);
+        this.lastDate = formatChartDate(date);
       }
     },
     computed: {
