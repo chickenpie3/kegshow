@@ -41,20 +41,22 @@ def lambda_handler(event, context):
     print(db_result)
 
     statusCode = 400
-
+    body = {}
     if 'Item' in db_result:
         item = db_result['Item']
         if 'vol_ml' in body:
             if 'calibration_pulses' in item:
                 calibration_pulses = int(item['calibration_pulses']['N'])
+                pulses_per_liter = (1000 * calibration_pulses) / vol_ml
                 vol_ml = int(body['vol_ml'])
-                update_calibration(flowmeter_id, (1000*calibration_pulses)/vol_ml)
+                update_calibration(flowmeter_id, pulses_per_liter)
                 statusCode = 200
+                body = {'pulses_per_liter': pulses_per_liter}
         else:
             initialize_calibration_pulses(flowmeter_id)
             statusCode = 200
 
     return {
         'statusCode': statusCode,
-        'body': json.dumps('Hello from Lambda!')
+        'body': json.dumps(body)
     }

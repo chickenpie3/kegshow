@@ -20,7 +20,7 @@
         <div class="section-title">Calibration</div>
         Current: {{this.brew.pulses_per_litre}} pulses per liter <br /><br />
         <label>Pulses: {{pulses}}</label><br />
-        <label>Volume: <input type="number" value="0" :disabled="!calibration_started" />ml</label>
+        <label>Volume: <input type="number" v-model="calibration_volume_ml" :disabled="!calibration_started" />ml</label>
         <div class="btn" @click="calibrate()">{{ calibration_started ? 'Calibrate' : 'Start' }}</div>
 
         <!-- <div class="section-title">Empty Keg</div>
@@ -79,7 +79,8 @@ export default {
             selected_brew_volume: 5,
             calibration_started: false,
             initial_pulses: 0,
-            pulses: 0
+            pulses: 0,
+            calibration_volume_ml: 0
         }
     },
     watch: {
@@ -204,21 +205,30 @@ export default {
 
         },
         calibrate() {
+            var axios = require('axios');
+            var config = {
+                method: 'post',
+                url: `https://api.kegshow.com/v1/${this.$route.params.user}/calibrate`,
+                headers: {
+                    'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
+                }
+            };
+            let self = this;
             if (this.calibration_started) {
-                console.log("Calibrating");
+                this.calibration_started = false;
+                console.log(`Calibrating to ${this.pulses} pulses per ${this.calibration_volume_ml} ml`);
+                config.data = { flowmeter_id: this.brew.flowmeter_id, vol_ml: this.calibration_volume_ml }
+                axios(config)
+                .then(function (response) {
+                    console.log(response);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
             } else {
                 console.log("Starting Calibration");
-                let self = this;
                 this.calibration_started = true;
-                var axios = require('axios');
-                var config = {
-                    method: 'post',
-                    url: `https://api.kegshow.com/v1/${this.$route.params.user}/calibrate`,
-                    headers: {
-                        'X-API-KEY': '6335e0726e4e2aec6ec1bc136b45c6dbe781a071'
-                    },
-                    data: { flowmeter_id: this.brew.flowmeter_id }
-                };
+                config.data = { flowmeter_id: this.brew.flowmeter_id }
                 axios(config)
                 .then(function (response) {
                     console.log(response);
